@@ -4,14 +4,17 @@ metadata:
   name: pyroscope-config
   namespace: observability
 data:
-  pyroscope.yaml: |
-    log-level: info
+  config.yaml: |
+    ---
+    target: all
 
     storage:
-      path: /data
+      backend: filesystem
+      filesystem:
+        path: /data
 
     server:
-      http-listen-port: 4040
+      http_listen_port: 4040
 
 ---
 apiVersion: apps/v1
@@ -36,7 +39,7 @@ spec:
       - name: pyroscope
         image: grafana/pyroscope:1.1.5
         args:
-          - -config.file=/etc/pyroscope/pyroscope.yaml
+          - -config.file=/etc/pyroscope/config.yaml
         ports:
         - containerPort: 4040
           name: http
@@ -54,13 +57,13 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /healthz
+            path: /ready
             port: 4040
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /healthz
+            path: /ready
             port: 4040
           initialDelaySeconds: 10
           periodSeconds: 5

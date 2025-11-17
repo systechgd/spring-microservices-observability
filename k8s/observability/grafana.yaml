@@ -8,6 +8,7 @@ data:
     apiVersion: 1
     datasources:
       - name: Mimir
+        uid: mimir
         type: prometheus
         access: proxy
         url: http://mimir.observability.svc.cluster.local:8080/prometheus
@@ -17,6 +18,7 @@ data:
           timeInterval: 30s
 
       - name: Loki
+        uid: loki
         type: loki
         access: proxy
         url: http://loki.observability.svc.cluster.local:3100
@@ -25,6 +27,7 @@ data:
           maxLines: 1000
 
       - name: Tempo
+        uid: tempo
         type: tempo
         access: proxy
         url: http://tempo.observability.svc.cluster.local:3200
@@ -49,6 +52,7 @@ data:
             enabled: true
 
       - name: Pyroscope
+        uid: pyroscope
         type: grafana-pyroscope-datasource
         access: proxy
         url: http://pyroscope.observability.svc.cluster.local:4040
@@ -191,14 +195,18 @@ spec:
           httpGet:
             path: /api/health
             port: 3000
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
         readinessProbe:
           httpGet:
             path: /api/health
             port: 3000
-          initialDelaySeconds: 10
+          initialDelaySeconds: 30
           periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
       volumes:
       - name: datasources
         configMap:

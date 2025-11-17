@@ -32,6 +32,9 @@ kubectl apply -f k8s/observability/otel-collector.yaml
 
 echo ""
 echo "Deploying Mimir (Metrics Storage)..."
+# Delete existing mimir statefulset to apply new config
+kubectl delete statefulset mimir -n observability --ignore-not-found=true
+sleep 2
 kubectl apply -f k8s/observability/mimir.yaml
 
 echo ""
@@ -40,14 +43,25 @@ kubectl apply -f k8s/observability/loki.yaml
 
 echo ""
 echo "Deploying Tempo (Traces Storage)..."
+# Delete existing tempo statefulset to apply new config
+kubectl delete statefulset tempo -n observability --ignore-not-found=true
+sleep 2
 kubectl apply -f k8s/observability/tempo.yaml
 
 echo ""
 echo "Deploying Pyroscope (Profiling)..."
+# Delete existing pyroscope statefulset to apply new config
+kubectl delete statefulset pyroscope -n observability --ignore-not-found=true
+sleep 2
 kubectl apply -f k8s/observability/pyroscope.yaml
 
 echo ""
 echo "Deploying Grafana (Visualization)..."
+# Delete existing grafana deployment to apply new config
+kubectl delete deployment grafana -n observability --ignore-not-found=true
+# Delete configmaps to ensure they're updated
+kubectl delete configmap grafana-datasources grafana-dashboards-config grafana-dashboard-microservices -n observability --ignore-not-found=true
+sleep 2
 kubectl apply -f k8s/observability/grafana.yaml
 
 echo ""

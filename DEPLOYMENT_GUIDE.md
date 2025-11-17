@@ -2,7 +2,7 @@
 
 ## Step-by-Step Deployment Instructions
 
-This guide provides detailed instructions for deploying the complete observability stack to Minikube for your management presentation.
+This guide provides detailed instructions for deploying the complete observability stack to a kind (Kubernetes IN Docker) cluster for your management presentation.
 
 ---
 
@@ -10,14 +10,15 @@ This guide provides detailed instructions for deploying the complete observabili
 
 Before starting, ensure you have:
 
-- [ ] **Docker Desktop** or **Docker Engine** installed and running
+- [ ] **Docker Desktop** installed and running
   - Verify: `docker --version`
   - Required: Docker 20.10 or higher
+  - Note: Docker Desktop includes Kubernetes
 
-- [ ] **Minikube** installed
-  - Verify: `minikube version`
-  - Required: v1.30 or higher
-  - Install: https://minikube.sigs.k8s.io/docs/start/
+- [ ] **kind** (Kubernetes IN Docker) installed
+  - Verify: `kind version`
+  - Required: v0.20 or higher
+  - Install: https://kind.sigs.k8s.io/docs/user/quick-start/#installation
 
 - [ ] **kubectl** installed
   - Verify: `kubectl version --client`
@@ -28,6 +29,10 @@ Before starting, ensure you have:
   - Minimum: 4 CPU cores, 8 GB RAM, 20 GB disk
   - Recommended: 8 CPU cores, 16 GB RAM, 40 GB disk
 
+- [ ] **Cluster Configuration**
+  - 2-node kind cluster (1 control-plane + 1 worker)
+  - Kubernetes version: v1.34.0
+
 ---
 
 ## Deployment Timeline
@@ -36,8 +41,8 @@ Total deployment time: **~15-20 minutes**
 
 | Step | Time | Description |
 |------|------|-------------|
-| 1 | 3-5 min | Setup Minikube |
-| 2 | 5-8 min | Build Docker images |
+| 1 | 3-5 min | Setup kind cluster |
+| 2 | 5-8 min | Build and load Docker images |
 | 3 | 5-7 min | Deploy observability stack |
 | 4 | 2-3 min | Deploy microservices |
 | 5 | 1-2 min | Verify deployment |
@@ -53,8 +58,8 @@ Total deployment time: **~15-20 minutes**
 ```
 
 This automated script will:
-1. Start Minikube with optimal settings
-2. Build both microservice Docker images
+1. Create kind cluster with 2 nodes (k8s v1.34)
+2. Build and load microservice Docker images into kind
 3. Deploy complete observability stack
 4. Deploy both microservices
 5. Display access URLs
@@ -65,38 +70,40 @@ This automated script will:
 
 ## Option 2: Step-by-Step Deployment
 
-### Step 1: Setup Minikube
+### Step 1: Setup kind Cluster
 
 ```bash
-./scripts/01-setup-minikube.sh
+./scripts/01-setup-kind-cluster.sh
 ```
 
 **What this does:**
-- Starts Minikube with 4 CPUs, 8GB RAM, 20GB disk
-- Enables metrics-server addon for resource monitoring
-- Enables ingress addon for external access
-- Configures Docker environment
+- Creates a 2-node kind cluster (1 control-plane + 1 worker)
+- Uses Kubernetes v1.34.0
+- Configures port mappings for accessing services (Grafana: 30300, MinIO: 30000/30001)
+- Installs metrics-server for resource monitoring
 
 **Expected output:**
 ```
-✓ Minikube setup complete!
-✓ Use 'eval $(minikube docker-env)' to configure your shell
+✓ Kind cluster setup complete!
+✓ Cluster name: spring-microservices-observability
+✓ Nodes: 2 (1 control-plane + 1 worker)
+✓ Kubernetes version: v1.34.0
 ```
 
 **⏰ Time: 3-5 minutes**
 
 ---
 
-### Step 2: Build Docker Images
+### Step 2: Build and Load Docker Images
 
 ```bash
 ./scripts/02-build-images.sh
 ```
 
 **What this does:**
-- Configures Docker to use Minikube's Docker daemon
 - Builds user-service Docker image
 - Builds order-service Docker image
+- Loads images into kind cluster for use by Kubernetes
 
 **Expected output:**
 ```
@@ -199,9 +206,16 @@ Service Access Information
 ========================================
 
 Grafana Dashboard:
-  URL: http://192.168.49.2:30300
+  URL: http://localhost:30300
   Username: admin
   Password: admin
+  (exposed via NodePort through kind cluster)
+
+MinIO Console (S3 Storage):
+  URL: http://localhost:30001
+  Username: minioadmin
+  Password: minioadmin
+  (exposed via NodePort through kind cluster)
 
 To access microservices, create port-forwards:
 
@@ -231,14 +245,10 @@ kubectl get pods -n microservices
 
 ### 2. Access Grafana
 
-1. Get Minikube IP:
-   ```bash
-   minikube ip
-   ```
+1. Open browser: `http://localhost:30300`
+   - (Thanks to kind's port mapping, services are accessible on localhost)
 
-2. Open browser: `http://<minikube-ip>:30300`
-
-3. Login:
+2. Login:
    - Username: `admin`
    - Password: `admin`
 

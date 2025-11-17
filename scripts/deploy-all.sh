@@ -8,8 +8,8 @@ echo "========================================="
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Step 1: Setup Minikube
-"$SCRIPT_DIR/01-setup-minikube.sh"
+# Step 1: Setup Kind Cluster
+"$SCRIPT_DIR/01-setup-kind-cluster.sh"
 
 # Step 2: Build Docker images
 "$SCRIPT_DIR/02-build-images.sh"

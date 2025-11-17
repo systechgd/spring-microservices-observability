@@ -1,6 +1,6 @@
 # Spring Microservices Observability POC
 
-A complete **Production-Ready Observability Stack** for Spring Boot microservices deployed on Minikube, featuring the modern Grafana observability stack with OpenTelemetry instrumentation.
+A complete **Production-Ready Observability Stack** for Spring Boot microservices deployed on Kubernetes (kind cluster), featuring the modern Grafana observability stack with OpenTelemetry instrumentation.
 
 ## 🎯 Overview
 
@@ -15,7 +15,7 @@ This POC demonstrates a scalable observability solution for **40+ microservices*
   - **Pyroscope**: Continuous profiling
   - **Grafana**: Unified visualization dashboard
 - **MinIO**: S3-compatible long-term storage
-- **Kubernetes**: Production-ready deployment on Minikube
+- **Kubernetes**: Production-ready deployment on kind (Docker Desktop)
 
 ## 🏗️ Architecture
 
@@ -80,11 +80,16 @@ This POC demonstrates a scalable observability solution for **40+ microservices*
 
 ### Prerequisites
 
-1. **Docker**: For container runtime
-2. **Minikube**: Local Kubernetes cluster
+1. **Docker Desktop**: For container runtime and Kubernetes
+2. **kind**: Kubernetes IN Docker (kind) for local cluster
 3. **kubectl**: Kubernetes CLI
 4. **Java 21**: For local development (optional)
 5. **Gradle**: For building (optional, wrapper included)
+
+**Cluster Configuration**:
+- 2-node kind cluster (1 control-plane + 1 worker)
+- Kubernetes version: v1.34.0
+- Docker Desktop with Kubernetes enabled
 
 ### One-Command Deployment
 
@@ -93,8 +98,8 @@ This POC demonstrates a scalable observability solution for **40+ microservices*
 ```
 
 This will:
-1. ✅ Setup Minikube with recommended settings
-2. ✅ Build Docker images for both microservices
+1. ✅ Setup kind cluster (2-node, k8s v1.34)
+2. ✅ Build Docker images and load into kind
 3. ✅ Deploy complete observability stack
 4. ✅ Deploy both microservices
 5. ✅ Display access information
@@ -102,10 +107,10 @@ This will:
 ### Step-by-Step Deployment
 
 ```bash
-# 1. Setup Minikube
-./scripts/01-setup-minikube.sh
+# 1. Setup kind cluster
+./scripts/01-setup-kind-cluster.sh
 
-# 2. Build Docker images
+# 2. Build Docker images and load into kind
 ./scripts/02-build-images.sh
 
 # 3. Deploy observability stack
@@ -125,15 +130,12 @@ This will:
 
 ### Grafana Dashboard
 ```
-URL: http://<minikube-ip>:30300
+URL: http://localhost:30300
 Username: admin
 Password: admin
 ```
 
-Get Minikube IP:
-```bash
-minikube ip
-```
+(Exposed via NodePort through kind cluster port mapping)
 
 ### Microservices (via port-forward)
 
@@ -154,12 +156,18 @@ kubectl port-forward -n microservices svc/order-service 8082:8082
 - Metrics: http://localhost:8082/actuator/prometheus
 
 ### MinIO Console (S3 Storage)
+```
+URL: http://localhost:30001
+Username: minioadmin
+Password: minioadmin
+```
+
+(Exposed via NodePort through kind cluster port mapping)
+
+Alternatively, use port-forward:
 ```bash
 kubectl port-forward -n observability svc/minio 9001:9001
 ```
-- URL: http://localhost:9001
-- Username: minioadmin
-- Password: minioadmin
 
 ## 📊 Sample API Requests
 
@@ -313,13 +321,14 @@ spring-microservices-observability/
 │       └── minio.yaml
 ├── scripts/                   # Deployment automation
 │   ├── deploy-all.sh
-│   ├── 01-setup-minikube.sh
+│   ├── 01-setup-kind-cluster.sh
 │   ├── 02-build-images.sh
 │   ├── 03-deploy-observability.sh
 │   ├── 04-deploy-microservices.sh
 │   ├── 05-access-services.sh
 │   ├── 06-generate-traffic.sh
 │   └── cleanup.sh
+├── kind-cluster-config.yaml   # Kind cluster configuration
 ├── build.gradle              # Root Gradle configuration
 ├── settings.gradle           # Gradle settings
 ├── docker-compose.yml        # Local development
@@ -388,8 +397,8 @@ data:
 # Remove all deployments
 ./scripts/cleanup.sh
 
-# Delete Minikube cluster
-minikube delete
+# Delete kind cluster
+kind delete cluster --name spring-microservices-observability
 ```
 
 ## 🔄 Adding More Microservices
@@ -418,8 +427,13 @@ To add additional microservices:
 
 5. **Build and deploy**:
    ```bash
-   eval $(minikube docker-env)
+   # Build image
    docker build -t new-service:latest -f microservices/new-service/Dockerfile .
+
+   # Load into kind cluster
+   kind load docker-image new-service:latest --name spring-microservices-observability
+
+   # Deploy to Kubernetes
    kubectl apply -f k8s/microservices/new-service.yaml
    ```
 
@@ -457,7 +471,7 @@ To add additional microservices:
 
 For this POC, MinIO provides:
 - Local S3-compatible storage
-- Easy Minikube deployment
+- Easy Kubernetes deployment
 - Production S3 compatibility
 - Simple migration path to AWS/GCP/Azure
 

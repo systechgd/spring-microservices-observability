@@ -52,7 +52,7 @@ data:
 
     querier:
       frontend_worker:
-        frontend_address: tempo:9095
+        frontend_address: tempo.observability.svc.cluster.local:9095
 
     query_frontend:
       search:

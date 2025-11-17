@@ -87,57 +87,55 @@ metadata:
 data:
   microservices-overview.json: |
     {
-      "dashboard": {
-        "title": "Microservices Overview",
-        "tags": ["microservices", "spring-boot"],
-        "timezone": "browser",
-        "panels": [
-          {
-            "title": "Request Rate",
-            "targets": [
-              {
-                "expr": "rate(http_server_requests_seconds_count[5m])",
-                "legendFormat": "{{service_name}} - {{uri}}"
-              }
-            ],
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
-          },
-          {
-            "title": "Response Time (p95)",
-            "targets": [
-              {
-                "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))",
-                "legendFormat": "{{service_name}} - {{uri}}"
-              }
-            ],
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
-          },
-          {
-            "title": "Error Rate",
-            "targets": [
-              {
-                "expr": "rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])",
-                "legendFormat": "{{service_name}} - {{uri}}"
-              }
-            ],
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
-          },
-          {
-            "title": "Active Requests",
-            "targets": [
-              {
-                "expr": "http_server_requests_active_count",
-                "legendFormat": "{{service_name}}"
-              }
-            ],
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
-          }
-        ]
-      }
+      "title": "Microservices Overview",
+      "tags": ["microservices", "spring-boot"],
+      "timezone": "browser",
+      "panels": [
+        {
+          "title": "Request Rate",
+          "targets": [
+            {
+              "expr": "rate(http_server_requests_seconds_count[5m])",
+              "legendFormat": "{{service_name}} - {{uri}}"
+            }
+          ],
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+        },
+        {
+          "title": "Response Time (p95)",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m]))",
+              "legendFormat": "{{service_name}} - {{uri}}"
+            }
+          ],
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+        },
+        {
+          "title": "Error Rate",
+          "targets": [
+            {
+              "expr": "rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])",
+              "legendFormat": "{{service_name}} - {{uri}}"
+            }
+          ],
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+        },
+        {
+          "title": "Active Requests",
+          "targets": [
+            {
+              "expr": "http_server_requests_active_count",
+              "legendFormat": "{{service_name}}"
+            }
+          ],
+          "type": "graph",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+        }
+      ]
     }
 
 ---

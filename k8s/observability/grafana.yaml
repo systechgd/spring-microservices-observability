@@ -169,12 +169,10 @@ spec:
           value: admin
         - name: GF_INSTALL_PLUGINS
           value: grafana-pyroscope-datasource
-        - name: GF_AUTH_ANONYMOUS_ENABLED
-          value: "true"
-        - name: GF_AUTH_ANONYMOUS_ORG_ROLE
-          value: Admin
-        - name: GF_FEATURE_TOGGLES_ENABLE
-          value: "traceqlEditor tracesToMetrics"
+        - name: GF_PATHS_PROVISIONING
+          value: /etc/grafana/provisioning
+        - name: GF_LOG_LEVEL
+          value: debug
         volumeMounts:
         - name: datasources
           mountPath: /etc/grafana/provisioning/datasources

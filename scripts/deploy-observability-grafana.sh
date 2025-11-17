@@ -51,17 +51,20 @@ echo ""
 
 # Deploy Grafana Loki for logs
 echo "📊 Deploying Grafana Loki (Log Aggregation)..."
-helm upgrade --install loki grafana/loki \
+helm upgrade --install loki grafana/loki-stack \
   --namespace observability \
-  --version 6.16.0 \
-  --set loki.auth_enabled=false \
-  --set deploymentMode=SingleBinary \
-  --set loki.commonConfig.replication_factor=1 \
-  --set loki.storage.type=filesystem \
-  --set singleBinary.replicas=1 \
-  --set monitoring.selfMonitoring.enabled=false \
-  --set monitoring.lokiCanary.enabled=false \
-  --set test.enabled=false \
+  --version 2.10.2 \
+  --set loki.enabled=true \
+  --set promtail.enabled=false \
+  --set grafana.enabled=false \
+  --set prometheus.enabled=false \
+  --set loki.persistence.enabled=true \
+  --set loki.persistence.size=5Gi \
+  --set loki.config.auth_enabled=false \
+  --set loki.config.ingester.chunk_idle_period=3m \
+  --set loki.config.ingester.chunk_block_size=262144 \
+  --set loki.config.ingester.chunk_retain_period=1m \
+  --set loki.config.limits_config.retention_period=168h \
   --wait --timeout=5m
 echo "✅ Loki deployed"
 echo ""
@@ -148,7 +151,7 @@ data:
 
     loki.write "default" {
       endpoint {
-        url = "http://loki-gateway.observability.svc.cluster.local/loki/api/v1/push"
+        url = "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
       }
     }
 
@@ -193,7 +196,7 @@ helm upgrade --install grafana grafana/grafana \
   --set datasources."datasources\.yaml".datasources[0].access=proxy \
   --set datasources."datasources\.yaml".datasources[1].name=Loki \
   --set datasources."datasources\.yaml".datasources[1].type=loki \
-  --set datasources."datasources\.yaml".datasources[1].url=http://loki-gateway.observability.svc.cluster.local \
+  --set datasources."datasources\.yaml".datasources[1].url=http://loki.observability.svc.cluster.local:3100 \
   --set datasources."datasources\.yaml".datasources[1].access=proxy \
   --set datasources."datasources\.yaml".datasources[2].name=Tempo \
   --set datasources."datasources\.yaml".datasources[2].type=tempo \

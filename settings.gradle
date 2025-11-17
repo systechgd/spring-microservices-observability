@@ -1,0 +1,4 @@
+rootProject.name = 'spring-microservices-observability'
+
+include 'microservices:user-service'
+include 'microservices:order-service'

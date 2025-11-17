@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:3.2.1'
+        classpath 'io.spring.gradle:dependency-management-plugin:1.1.4'
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    group = 'com.observability.demo'
+    version = '1.0.0'
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        // Spring Boot starters
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+        // OpenTelemetry instrumentation
+        implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.0.0'
+
+        // Micrometer with OTLP exporter
+        implementation 'io.micrometer:micrometer-registry-otlp'
+        implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+
+        // Lombok for cleaner code
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+
+        // Testing
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+}

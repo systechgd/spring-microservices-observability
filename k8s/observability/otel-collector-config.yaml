@@ -1,0 +1,117 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Prometheus receiver to scrape metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: ['localhost:8888']
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # Resource detection
+  resource:
+    attributes:
+      - key: cluster.name
+        value: minikube
+        action: insert
+      - key: deployment.environment
+        value: development
+        action: insert
+
+  # Add resource attributes
+  resource/add_attributes:
+    attributes:
+      - key: service.instance.id
+        from_attribute: k8s.pod.name
+        action: insert
+
+exporters:
+  # Prometheus exporter (for Mimir)
+  otlphttp/mimir:
+    endpoint: http://mimir.observability.svc.cluster.local:9009/otlp
+    tls:
+      insecure: true
+
+  # Tempo exporter (for traces)
+  otlp/tempo:
+    endpoint: tempo.observability.svc.cluster.local:4317
+    tls:
+      insecure: true
+
+  # Loki exporter (for logs)
+  loki:
+    endpoint: http://loki.observability.svc.cluster.local:3100/loki/api/v1/push
+    tls:
+      insecure: true
+
+  # Prometheus remote write (alternative for Mimir)
+  prometheusremotewrite:
+    endpoint: http://mimir.observability.svc.cluster.local:9009/api/v1/push
+    tls:
+      insecure: true
+
+  # Debug exporter for troubleshooting
+  logging:
+    loglevel: info
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # Prometheus exporter for collector metrics
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
+extensions:
+  health_check:
+    endpoint: :13133
+
+  pprof:
+    endpoint: :1777
+
+  zpages:
+    endpoint: :55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+
+  pipelines:
+    # Traces pipeline
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, resource/add_attributes, batch]
+      exporters: [otlp/tempo, logging]
+
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, resource, resource/add_attributes, batch]
+      exporters: [prometheusremotewrite, logging]
+
+    # Logs pipeline
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, resource/add_attributes, batch]
+      exporters: [loki, logging]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: :8888

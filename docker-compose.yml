@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  user-service:
+    build:
+      context: .
+      dockerfile: microservices/user-service/Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+    networks:
+      - microservices-network
+    depends_on:
+      - otel-collector
+
+  order-service:
+    build:
+      context: .
+      dockerfile: microservices/order-service/Dockerfile
+    container_name: order-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - USER_SERVICE_URL=http://user-service:8081
+    networks:
+      - microservices-network
+    depends_on:
+      - user-service
+      - otel-collector
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.91.0
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./k8s/observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "8889:8889"   # Prometheus exporter metrics
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge

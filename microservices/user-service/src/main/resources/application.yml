@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: jdbc:h2:mem:userdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8081
+
+# Actuator endpoints for health checks and metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,traces
+  endpoint:
+    health:
+      show-details: always
+
+  # Metrics configuration
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    tags:
+      application: ${spring.application.name}
+      environment: development
+
+  # Tracing configuration
+  tracing:
+    sampling:
+      probability: 1.0
+
+  # OTLP exporter configuration
+  otlp:
+    metrics:
+      export:
+        enabled: true
+        url: http://otel-collector:4318/v1/metrics
+        step: 10s
+    tracing:
+      endpoint: http://otel-collector:4318/v1/traces
+
+# Logging configuration
+logging:
+  level:
+    com.observability.demo: INFO
+    org.springframework.web: INFO
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+
+# OpenTelemetry configuration
+otel:
+  service:
+    name: ${spring.application.name}
+  exporter:
+    otlp:
+      endpoint: http://otel-collector:4318
+  metrics:
+    exporter: otlp
+  traces:
+    exporter: otlp
+  logs:
+    exporter: otlp

@@ -31,12 +31,18 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-        // OpenTelemetry instrumentation
-        implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.0.0'
+        // OpenTelemetry instrumentation for Spring Boot 3.x
+        implementation platform('io.opentelemetry:opentelemetry-bom:1.32.0')
+        implementation 'io.opentelemetry:opentelemetry-api'
+        implementation 'io.opentelemetry:opentelemetry-sdk'
+        implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
-        // Micrometer with OTLP exporter
+        // Micrometer with OTLP exporter for metrics
         implementation 'io.micrometer:micrometer-registry-otlp'
+
+        // Micrometer Tracing with OpenTelemetry for distributed tracing
         implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+        implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
         // Lombok for cleaner code
         compileOnly 'org.projectlombok:lombok'

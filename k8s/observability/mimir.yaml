@@ -63,7 +63,7 @@ data:
 
     memberlist:
       join_members:
-        - mimir:7946
+        - mimir.observability.svc.cluster.local:7946
 
 ---
 apiVersion: apps/v1

@@ -16,10 +16,15 @@ sleep 2
 
 echo ""
 echo "Deploying MinIO (S3-compatible storage)..."
+# Delete existing minio-setup job if it exists (Jobs are immutable)
+kubectl delete job minio-setup -n observability --ignore-not-found=true
 kubectl apply -f k8s/observability/minio.yaml
 
 echo "Waiting for MinIO to be ready..."
 kubectl wait --for=condition=ready pod -l app=minio -n observability --timeout=120s
+
+echo "Waiting for MinIO setup job to complete..."
+kubectl wait --for=condition=complete job/minio-setup -n observability --timeout=180s
 
 echo ""
 echo "Deploying OpenTelemetry Collector..."

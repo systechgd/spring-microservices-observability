@@ -22,7 +22,7 @@ spec:
       containers:
       - name: order-service
         image: order-service:latest
-        imagePullPolicy: Never  # For local images loaded into kind cluster
+        imagePullPolicy: Never  # For Docker Desktop Kubernetes
         ports:
         - containerPort: 8082
           name: http
@@ -30,7 +30,7 @@ spec:
         - name: SPRING_PROFILES_ACTIVE
           value: "default"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "http://otel-collector.observability.svc.cluster.local:4318"
+          value: "http://alloy.observability.svc.cluster.local:4318"
         - name: OTEL_SERVICE_NAME
           value: "order-service"
         - name: OTEL_RESOURCE_ATTRIBUTES

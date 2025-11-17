@@ -6,8 +6,7 @@ echo "========================================="
 echo "Building Docker Images"
 echo "========================================="
 
-# Ensure we're using Minikube's Docker daemon
-eval $(minikube docker-env)
+CLUSTER_NAME="spring-microservices-observability"
 
 cd "$(dirname "$0")/.."
 
@@ -18,6 +17,11 @@ echo "Building order-service..."
 docker build -t order-service:latest -f microservices/order-service/Dockerfile .
 
 echo ""
-echo "✓ Docker images built successfully!"
+echo "Loading images into kind cluster..."
+kind load docker-image user-service:latest --name "${CLUSTER_NAME}"
+kind load docker-image order-service:latest --name "${CLUSTER_NAME}"
+
+echo ""
+echo "✓ Docker images built and loaded into kind cluster successfully!"
 echo ""
 docker images | grep -E "(user-service|order-service)"

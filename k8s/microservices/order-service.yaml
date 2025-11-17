@@ -22,7 +22,7 @@ spec:
       containers:
       - name: order-service
         image: order-service:latest
-        imagePullPolicy: Never  # For minikube local images
+        imagePullPolicy: Never  # For local images loaded into kind cluster
         ports:
         - containerPort: 8082
           name: http

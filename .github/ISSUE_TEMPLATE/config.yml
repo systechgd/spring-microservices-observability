@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: AWS Support
+    url: https://console.aws.amazon.com/support/home
+    about: For AWS-specific issues, consider opening an AWS support ticket
+  - name: Team Discussion
+    url: https://github.com/orgs/YOUR_ORG/discussions
+    about: For questions or discussions, use GitHub Discussions
